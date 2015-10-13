@@ -10,6 +10,7 @@ namespace MonsterRPG {
     /// </summary>
     class Game {
         long gameTime = 0L;
+        Boolean shouldTerminate = false;
         /// <summary>
         /// Load game assets and prepare to start
         /// </summary>
@@ -34,7 +35,7 @@ namespace MonsterRPG {
         /// </summary>
         public void run() {
             //TODO: Add engine logic here
-            while (true) {
+            while (!shouldTerminate) {
                 update();
                 render();
             }
