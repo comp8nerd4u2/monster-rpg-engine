@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
+using System.Diagnostics;
 
 namespace MonsterRPG {
     /// <summary>
@@ -16,6 +18,12 @@ namespace MonsterRPG {
         /// </summary>
         public void init() {
             //TODO: Load game assets
+        }
+        /// <summary>
+        /// Check if the user has given input
+        /// </summary>
+        public void checkInputs() {
+
         }
         /// <summary>
         /// Do an update tick
@@ -35,9 +43,18 @@ namespace MonsterRPG {
         /// </summary>
         public void run() {
             //TODO: Add engine logic here
+            long tickFrequency = 1000L / 60L;
+            Stopwatch lastTick = new Stopwatch();
+            lastTick.Start();
             while (!shouldTerminate) {
+                checkInputs();
                 update();
                 render();
+                //Put loop on hold
+                while (lastTick.ElapsedMilliseconds < tickFrequency) {
+                    Thread.Yield();
+                }
+                lastTick.Restart();
             }
             terminate();
         }
