@@ -5,9 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MonsterRPG {
+    /// <summary>
+    /// Main entry class for our game.
+    /// </summary>
     class MonsterRPG {
-        public static void main(String[] argsv) {
+        private static Game game = new Game();
 
+        public static void main(String[] argsv) {
+            game.init();
+            game.run();
         }
     }
 }

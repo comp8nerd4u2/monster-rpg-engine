@@ -36,7 +36,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Game.cs" />
     <Compile Include="MonsterRPG.cs" />
+    <Compile Include="TitleScreen.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
