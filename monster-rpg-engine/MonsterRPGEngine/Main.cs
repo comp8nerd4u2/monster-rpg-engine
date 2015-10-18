@@ -8,12 +8,12 @@ namespace MonsterRPG {
     /// <summary>
     /// Main entry class for our game.
     /// </summary>
-    class MonsterRPG {
-        private static Engine game = new Engine();
+    class Program {
+        private static Engine engine = new Engine();
 
-        public static void main(String[] argsv) {
-            game.init();
-            game.run();
+        public static void Main(String[] argsv) {
+            engine.init();
+            engine.run();
         }
     }
 }
