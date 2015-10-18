@@ -10,7 +10,7 @@ namespace MonsterRPG {
     /// <summary>
     /// Represents implementation of the game
     /// </summary>
-    class Game {
+    class Engine {
         long gameTime = 0L;
         Boolean shouldTerminate = false;
         /// <summary>

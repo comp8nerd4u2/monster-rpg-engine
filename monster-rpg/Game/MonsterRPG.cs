@@ -9,7 +9,7 @@ namespace MonsterRPG {
     /// Main entry class for our game.
     /// </summary>
     class MonsterRPG {
-        private static Game game = new Game();
+        private static Engine game = new Engine();
 
         public static void main(String[] argsv) {
             game.init();
