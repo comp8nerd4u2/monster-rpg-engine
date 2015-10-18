@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace MonsterRPG {
     /// <summary>
@@ -17,7 +18,10 @@ namespace MonsterRPG {
         /// Load game assets and prepare to start
         /// </summary>
         public void Init() {
+            //TODO: Create the game window
+            Form test = new Form();
             //TODO: Load game assets
+
         }
         /// <summary>
         /// Check if the user has given input
@@ -43,14 +47,14 @@ namespace MonsterRPG {
         /// </summary>
         public void Run() {
             //TODO: Add engine logic here
-            long tickFrequency = 1000L / 60L;
+            long tickFrequency = 1000L / 60L; //60 ticks per second
             Stopwatch lastTick = new Stopwatch();
             lastTick.Start();
             while (!shouldTerminate) {
                 CheckInputs();
                 Update();
                 Render();
-                //Put loop on hold
+                //Wait patiently to perform the next tick
                 while (lastTick.ElapsedMilliseconds < tickFrequency) {
                     Thread.Yield();
                 }

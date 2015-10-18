@@ -52,12 +52,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MonsterRPG\Drawing\Sprite.cs" />
     <Compile Include="MonsterRPG\Engine.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="MonsterRPG\TitleScreen.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
