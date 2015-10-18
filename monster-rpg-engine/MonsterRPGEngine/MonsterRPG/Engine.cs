@@ -16,52 +16,52 @@ namespace MonsterRPG {
         /// <summary>
         /// Load game assets and prepare to start
         /// </summary>
-        public void init() {
+        public void Init() {
             //TODO: Load game assets
         }
         /// <summary>
         /// Check if the user has given input
         /// </summary>
-        public void checkInputs() {
+        public void CheckInputs() {
 
         }
         /// <summary>
         /// Do an update tick
         /// </summary>
-        public void update() {
+        public void Update() {
             //TODO: Add game logic here
             gameTime++; //Iterate game time
         }
         /// <summary>
         /// Render to the screen
         /// </summary>
-        public void render() {
+        public void Render() {
             //TODO: Add render logic here
         }
         /// <summary>
         /// Game loop
         /// </summary>
-        public void run() {
+        public void Run() {
             //TODO: Add engine logic here
             long tickFrequency = 1000L / 60L;
             Stopwatch lastTick = new Stopwatch();
             lastTick.Start();
             while (!shouldTerminate) {
-                checkInputs();
-                update();
-                render();
+                CheckInputs();
+                Update();
+                Render();
                 //Put loop on hold
                 while (lastTick.ElapsedMilliseconds < tickFrequency) {
                     Thread.Yield();
                 }
                 lastTick.Restart();
             }
-            terminate();
+            Terminate();
         }
         /// <summary>
         /// Terminates the game
         /// </summary>
-        public void terminate() {
+        public void Terminate() {
             //TODO: Destroy and clean up game objects
             
         }

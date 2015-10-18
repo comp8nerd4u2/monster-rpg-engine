@@ -12,8 +12,8 @@ namespace MonsterRPG {
         private static Engine engine = new Engine();
 
         public static void Main(String[] argsv) {
-            engine.init();
-            engine.run();
+            engine.Init();
+            engine.Run();
         }
     }
 }
