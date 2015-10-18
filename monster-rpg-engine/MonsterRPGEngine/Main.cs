@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MonsterRPG {
+namespace MonsterRPGEngine {
     /// <summary>
     /// Main entry class for our game.
     /// </summary>

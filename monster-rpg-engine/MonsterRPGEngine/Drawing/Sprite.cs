@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MonsterRPGEngine.MonsterRPG.Drawing {
+namespace MonsterRPGEngine.Drawing {
     class Sprite {
     }
 }

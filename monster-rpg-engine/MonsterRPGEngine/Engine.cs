@@ -6,12 +6,15 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
 using System.Windows.Forms;
+using SharpDX.Windows;
 
-namespace MonsterRPG {
+namespace MonsterRPGEngine {
     /// <summary>
     /// Represents implementation of the game
     /// </summary>
     class Engine {
+        public static RenderForm gameWindow = new RenderForm("MonsterRPGEngine");
+
         long gameTime = 0L;
         Boolean shouldTerminate = false;
         /// <summary>
@@ -19,10 +22,11 @@ namespace MonsterRPG {
         /// </summary>
         public void Init() {
             //TODO: Create the game window
-            Form test = new Form();
+            
             //TODO: Load game assets
 
         }
+
         /// <summary>
         /// Check if the user has given input
         /// </summary>
