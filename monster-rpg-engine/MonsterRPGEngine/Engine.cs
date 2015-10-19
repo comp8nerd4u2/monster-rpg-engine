@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
 using System.Windows.Forms;
+using SharpDX;
 using SharpDX.Windows;
 using SharpDX.Direct2D1;
 using SharpDX.DXGI;
@@ -49,7 +50,17 @@ namespace MonsterRPGEngine {
             D3D11Device device;
             SwapChain swapChain;
             D3D11Device.CreateWithSwapChain(SharpDX.Direct3D.DriverType.Hardware, SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport, swapChainDesc, out device, out swapChain);
+            Surface backbuffer = Surface.FromSwapChain(swapChain, 0);
             D2D1Factory factory = new D2D1Factory(FactoryType.SingleThreaded, DebugLevel.Error);
+            Size2F dpi = factory.DesktopDpi;
+            RenderTarget renderTarget = new RenderTarget(factory, backbuffer, new RenderTargetProperties() {
+                DpiX = dpi.Width,
+                DpiY = dpi.Height,
+                MinLevel = FeatureLevel.Level_DEFAULT,
+                PixelFormat = new PixelFormat(Format.Unknown, AlphaMode.Ignore),
+                Type = RenderTargetType.Default,
+                Usage = RenderTargetUsage.None
+            });
             //TODO: Load game assets
         }
 
