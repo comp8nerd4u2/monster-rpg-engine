@@ -9,13 +9,15 @@ using System.Windows.Forms;
 using SharpDX.Windows;
 using SharpDX.Direct2D1;
 using SharpDX.DXGI;
+using D2D1Factory = SharpDX.Direct2D1.Factory;
+using D3D11Device = SharpDX.Direct3D11.Device;
 
 namespace MonsterRPGEngine {
     /// <summary>
     /// Represents implementation of the game
     /// </summary>
     class Engine {
-        public static RenderForm gameWindow = new RenderForm("MonsterRPGEngine");
+        public static RenderForm gameWindow;
 
         long gameTime = 0L;
         Boolean shouldTerminate = false;
@@ -23,6 +25,7 @@ namespace MonsterRPGEngine {
         /// Load game assets and prepare to start
         /// </summary>
         public void Init() {
+            gameWindow = new RenderForm("MonsterRPGEngine");
             gameWindow.FormClosed += (x, y) => {
                 Terminate();
             };
@@ -31,10 +34,23 @@ namespace MonsterRPGEngine {
                 Application.Run(gameWindow);
             });
             messageLoopThread.Start();
-            //TODO: Load game assets
-            //TODO: Learn how to initialize DirectX components
-            SharpDX.Direct2D1.Factory factory = new SharpDX.Direct2D1.Factory(FactoryType.SingleThreaded, DebugLevel.Error);
             
+            //TODO: Learn how to initialize DirectX components
+            SwapChainDescription swapChainDesc = new SwapChainDescription() {
+                BufferCount = 2, //Double buffer
+                Usage = Usage.RenderTargetOutput, //We're using this swap chain as a RenderTarget
+                OutputHandle = gameWindow.Handle, //Pass handle of our game window
+                IsWindowed = true, //Yep
+                ModeDescription = new ModeDescription(0, 0, new Rational(60, 1), Format.B8G8R8A8_UNorm),
+                SampleDescription = new SampleDescription(1, 0), //No Multisampling
+                Flags = SwapChainFlags.AllowModeSwitch,
+                SwapEffect = SwapEffect.Discard
+            };
+            D3D11Device device;
+            SwapChain swapChain;
+            D3D11Device.CreateWithSwapChain(SharpDX.Direct3D.DriverType.Hardware, SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport, swapChainDesc, out device, out swapChain);
+            D2D1Factory factory = new D2D1Factory(FactoryType.SingleThreaded, DebugLevel.Error);
+            //TODO: Load game assets
         }
 
         /// <summary>
