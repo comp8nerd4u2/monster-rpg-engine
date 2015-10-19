@@ -7,6 +7,8 @@ using System.Threading;
 using System.Diagnostics;
 using System.Windows.Forms;
 using SharpDX.Windows;
+using SharpDX.Direct2D1;
+using SharpDX.DXGI;
 
 namespace MonsterRPGEngine {
     /// <summary>
@@ -21,8 +23,14 @@ namespace MonsterRPGEngine {
         /// Load game assets and prepare to start
         /// </summary>
         public void Init() {
-            //TODO: Create the game window
-            
+            gameWindow.FormClosed += (x, y) => {
+                Terminate();
+            };
+            //Run the game window on its own thread
+            Thread messageLoopThread = new Thread(() => {
+                Application.Run(gameWindow);
+            });
+            messageLoopThread.Start();
             //TODO: Load game assets
 
         }
@@ -39,12 +47,15 @@ namespace MonsterRPGEngine {
         public void Update() {
             //TODO: Add game logic here
             gameTime++; //Iterate game time
+            
         }
         /// <summary>
         /// Render to the screen
         /// </summary>
         public void Render() {
             //TODO: Add render logic here
+            Console.Clear();
+            Console.WriteLine("Game Time: " + gameTime);
         }
         /// <summary>
         /// Game loop
@@ -58,6 +69,9 @@ namespace MonsterRPGEngine {
                 CheckInputs();
                 Update();
                 Render();
+                if (lastTick.ElapsedMilliseconds > tickFrequency) {
+                    Console.WriteLine("Tick Lag: " + (lastTick.ElapsedMilliseconds - tickFrequency) + " ms");
+                }
                 //Wait patiently to perform the next tick
                 while (lastTick.ElapsedMilliseconds < tickFrequency) {
                     Thread.Yield();
@@ -71,7 +85,7 @@ namespace MonsterRPGEngine {
         /// </summary>
         public void Terminate() {
             //TODO: Destroy and clean up game objects
-            
+            Environment.Exit(0);
         }
     }
 }
