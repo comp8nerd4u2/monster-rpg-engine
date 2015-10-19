@@ -32,7 +32,9 @@ namespace MonsterRPGEngine {
             });
             messageLoopThread.Start();
             //TODO: Load game assets
-
+            //TODO: Learn how to initialize DirectX components
+            SharpDX.Direct2D1.Factory factory = new SharpDX.Direct2D1.Factory(FactoryType.SingleThreaded, DebugLevel.Error);
+            
         }
 
         /// <summary>
