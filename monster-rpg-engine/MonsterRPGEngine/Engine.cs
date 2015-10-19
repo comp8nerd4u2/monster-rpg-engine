@@ -44,7 +44,7 @@ namespace MonsterRPGEngine {
                 ModeDescription = new ModeDescription(0, 0, new Rational(60, 1), Format.B8G8R8A8_UNorm),
                 SampleDescription = new SampleDescription(1, 0), //No Multisampling
                 Flags = SwapChainFlags.AllowModeSwitch,
-                SwapEffect = SwapEffect.Discard
+                SwapEffect = SwapEffect.Discard //Assuming this means buffer will be cleared when it is moved offscreen
             };
             D3D11Device device;
             SwapChain swapChain;
