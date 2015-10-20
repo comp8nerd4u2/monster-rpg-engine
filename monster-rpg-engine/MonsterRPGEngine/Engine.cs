@@ -20,47 +20,55 @@ namespace MonsterRPGEngine {
     class Engine {
         public static RenderForm gameWindow;
 
+        private static SwapChain swapChain;
+        private static RenderTarget renderTarget;
+
         long gameTime = 0L;
         Boolean shouldTerminate = false;
         /// <summary>
         /// Load game assets and prepare to start
         /// </summary>
         public void Init() {
-            gameWindow = new RenderForm("MonsterRPGEngine");
-            gameWindow.FormClosed += (x, y) => {
-                Terminate();
-            };
             //Run the game window on its own thread
             Thread messageLoopThread = new Thread(() => {
+                //Application.Run(gameWindow);
+                gameWindow = new RenderForm("MonsterRPGEngine");
+                gameWindow.FormClosed += (x, y) => {
+                    Terminate();
+                };
+                //TODO: Learn how to initialize DirectX components
+                SwapChainDescription swapChainDesc = new SwapChainDescription() {
+                    BufferCount = 2, //Double buffer
+                    Usage = Usage.RenderTargetOutput, //We're using this swap chain as a RenderTarget
+                    OutputHandle = gameWindow.Handle, //Pass handle of our game window
+                    IsWindowed = true, //Yep
+                    ModeDescription = new ModeDescription(0, 0, new Rational(60, 1), Format.B8G8R8A8_UNorm),
+                    SampleDescription = new SampleDescription(1, 0), //No Multisampling
+                    Flags = SwapChainFlags.AllowModeSwitch,
+                    SwapEffect = SwapEffect.Discard //Assuming this means buffer will be cleared when it is moved offscreen
+                };
+                D3D11Device device;
+                //SwapChain swapChain;
+                D3D11Device.CreateWithSwapChain(SharpDX.Direct3D.DriverType.Hardware, SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport, swapChainDesc, out device, out swapChain);
+                Surface backbuffer = Surface.FromSwapChain(swapChain, 0);
+                D2D1Factory factory = new D2D1Factory(FactoryType.SingleThreaded, DebugLevel.Error);
+                Size2F dpi = factory.DesktopDpi;
+                renderTarget = new RenderTarget(factory, backbuffer, new RenderTargetProperties() {
+                    DpiX = dpi.Width,
+                    DpiY = dpi.Height,
+                    MinLevel = FeatureLevel.Level_DEFAULT,
+                    PixelFormat = new PixelFormat(Format.Unknown, AlphaMode.Ignore),
+                    Type = RenderTargetType.Default,
+                    Usage = RenderTargetUsage.None
+                });
+                gameWindow.Show();
                 Application.Run(gameWindow);
             });
+            messageLoopThread.SetApartmentState(ApartmentState.STA);
             messageLoopThread.Start();
+            while (gameWindow == null || renderTarget == null) { }
             
-            //TODO: Learn how to initialize DirectX components
-            SwapChainDescription swapChainDesc = new SwapChainDescription() {
-                BufferCount = 2, //Double buffer
-                Usage = Usage.RenderTargetOutput, //We're using this swap chain as a RenderTarget
-                OutputHandle = gameWindow.Handle, //Pass handle of our game window
-                IsWindowed = true, //Yep
-                ModeDescription = new ModeDescription(0, 0, new Rational(60, 1), Format.B8G8R8A8_UNorm),
-                SampleDescription = new SampleDescription(1, 0), //No Multisampling
-                Flags = SwapChainFlags.AllowModeSwitch,
-                SwapEffect = SwapEffect.Discard //Assuming this means buffer will be cleared when it is moved offscreen
-            };
-            D3D11Device device;
-            SwapChain swapChain;
-            D3D11Device.CreateWithSwapChain(SharpDX.Direct3D.DriverType.Hardware, SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport, swapChainDesc, out device, out swapChain);
-            Surface backbuffer = Surface.FromSwapChain(swapChain, 0);
-            D2D1Factory factory = new D2D1Factory(FactoryType.SingleThreaded, DebugLevel.Error);
-            Size2F dpi = factory.DesktopDpi;
-            RenderTarget renderTarget = new RenderTarget(factory, backbuffer, new RenderTargetProperties() {
-                DpiX = dpi.Width,
-                DpiY = dpi.Height,
-                MinLevel = FeatureLevel.Level_DEFAULT,
-                PixelFormat = new PixelFormat(Format.Unknown, AlphaMode.Ignore),
-                Type = RenderTargetType.Default,
-                Usage = RenderTargetUsage.None
-            });
+            
             //TODO: Load game assets
         }
 
@@ -85,6 +93,13 @@ namespace MonsterRPGEngine {
             //TODO: Add render logic here
             Console.Clear();
             Console.WriteLine("Game Time: " + gameTime);
+            //Begin Draw
+            renderTarget.BeginDraw();
+            renderTarget.Clear(Color4.Black);
+            //End Draw
+            renderTarget.EndDraw();
+            //Swap Backbuffer
+            swapChain.Present(0, PresentFlags.None);
         }
         /// <summary>
         /// Game loop
