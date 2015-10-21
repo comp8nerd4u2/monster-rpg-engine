@@ -55,6 +55,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Drawing\DirectManager.cs" />
     <Compile Include="Drawing\Screen.cs" />
     <Compile Include="Drawing\Sprite.cs" />
     <Compile Include="Engine.cs" />
