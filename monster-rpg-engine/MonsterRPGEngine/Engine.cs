@@ -18,12 +18,13 @@ namespace MonsterRPGEngine {
     /// Represents implementation of the game
     /// </summary>
     class Engine {
-        public static RenderForm gameWindow;
+        public RenderForm gameWindow;
 
-        private static D3D11Device device;
-        private static SwapChain swapChain;
-        private static RenderTarget renderTarget;
-        private static Boolean ShouldDisplayFPS = true; //Placeholder until FPS algorithm is added
+        private readonly object DirectXLock = new object();
+        private D3D11Device device;
+        private SwapChain swapChain;
+        private RenderTarget renderTarget;
+        private bool ShouldDisplayFPS = true; //Placeholder until FPS algorithm is added
 
         long gameTime = 0L;
         Boolean shouldTerminate = false;
@@ -45,6 +46,7 @@ namespace MonsterRPGEngine {
                 //TODO: Learn how to initialize DirectX components
                 //Initialize here because WinForms wont let us do it outside UI thread
                 //Describing our swap chain allows us to tell DirectX exactly how we want to render and transition each frame
+                Monitor.Enter(DirectXLock); //Initializing DirectX so lock it
                 SwapChainDescription swapChainDesc = new SwapChainDescription() {
                     BufferCount = 2, //Double buffer
                     Usage = Usage.RenderTargetOutput, //We're using this swap chain as a RenderTarget
@@ -69,6 +71,7 @@ namespace MonsterRPGEngine {
                     Type = RenderTargetType.Default, //Again swap chain has this
                     Usage = RenderTargetUsage.None //Yeah that swap chain though
                 });
+                Monitor.Exit(DirectXLock);
                 //Wow that was a handful. Now we can start our message loop on this thread.
                 gameWindow.Show();
                 Application.Run(gameWindow);
@@ -76,8 +79,7 @@ namespace MonsterRPGEngine {
             UIThread.SetApartmentState(ApartmentState.STA);
             UIThread.Name = "UIThread";
             UIThread.Start();
-            //TODO: Replace with cleaner multithreading code. This is ugly
-            while (gameWindow == null || renderTarget == null) { }
+            //TODO: Do some other initialization
             
             
             //TODO: Load game assets
@@ -105,14 +107,18 @@ namespace MonsterRPGEngine {
             //WARNING: May have to move rendering code to message loop in UIThread if this is causing issues
             Console.Clear();
             Console.WriteLine("Game Time: " + gameTime);
-            //Begin Draw
-            renderTarget.BeginDraw();
-            renderTarget.Clear(Color.CornflowerBlue.ToColor4()); //Clear using a common game clear color
-            
-            //End Draw
-            renderTarget.EndDraw();
-            //Swap Backbuffer
-            swapChain.Present(0, PresentFlags.None);
+            Monitor.Enter(DirectXLock);
+            if (renderTarget != null && swapChain != null) {
+                //Begin Draw
+                renderTarget.BeginDraw();
+                renderTarget.Clear(Color.CornflowerBlue.ToColor4()); //Clear using a common game clear color
+
+                //End Draw
+                renderTarget.EndDraw();
+                //Swap Backbuffer
+                swapChain.Present(0, PresentFlags.None);
+            }
+            Monitor.Exit(DirectXLock);
         }
         /// <summary>
         /// Game loop
@@ -143,9 +149,11 @@ namespace MonsterRPGEngine {
         public void Terminate() {
             //TODO: Destroy and clean up game objects
             //Release all COM objects
+            Monitor.Enter(DirectXLock);
             device.Dispose();
             swapChain.Dispose();
             renderTarget.Dispose();
+            Monitor.Exit(DirectXLock);
             Environment.Exit(0);
         }
     }
