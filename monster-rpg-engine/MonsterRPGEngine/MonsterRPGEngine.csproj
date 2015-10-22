@@ -58,9 +58,12 @@
     <Compile Include="Drawing\DirectManager.cs" />
     <Compile Include="Drawing\Screen.cs" />
     <Compile Include="Drawing\Sprite.cs" />
+    <Compile Include="Drawing\SpriteBatch.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Drawing\TitleScreen.cs" />
+    <Compile Include="Math\LongMovingAverage.cs" />
+    <Compile Include="TickProfiler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="SharpDX">

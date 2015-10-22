@@ -12,6 +12,8 @@ using SharpDX.Direct2D1;
 using SharpDX.DXGI;
 using D2D1Factory = SharpDX.Direct2D1.Factory;
 using D3D11Device = SharpDX.Direct3D11.Device;
+using MonsterRPGEngine.Drawing;
+using MonsterRPGEngine.Math;
 
 namespace MonsterRPGEngine {
     /// <summary>
@@ -20,11 +22,9 @@ namespace MonsterRPGEngine {
     class Engine {
         public RenderForm gameWindow;
 
-        private readonly object DirectXLock = new object();
-        private D3D11Device device;
-        private SwapChain swapChain;
-        private RenderTarget renderTarget;
+        public DirectManager DM { get; private set; }
         private bool ShouldDisplayFPS = true; //Placeholder until FPS algorithm is added
+        private LongMovingAverage FPS = new LongMovingAverage(10);
 
         long gameTime = 0L;
         Boolean shouldTerminate = false;
@@ -37,7 +37,9 @@ namespace MonsterRPGEngine {
              * Initializing in a new thread complicates our code,
              * but it is worth having seperate UI and Engine threads
              */
+            AutoResetEvent DMInitialized = new AutoResetEvent(false);
             Thread.CurrentThread.Name = "EngineThread";
+            Thread.CurrentThread.Priority = ThreadPriority.Highest;
             Thread UIThread = new Thread(() => {
                 gameWindow = new RenderForm("MonsterRPGEngine");
                 gameWindow.FormClosed += (o, e) => {
@@ -45,33 +47,8 @@ namespace MonsterRPGEngine {
                 };
                 //TODO: Learn how to initialize DirectX components
                 //Initialize here because WinForms wont let us do it outside UI thread
-                //Describing our swap chain allows us to tell DirectX exactly how we want to render and transition each frame
-                Monitor.Enter(DirectXLock); //Initializing DirectX so lock it
-                SwapChainDescription swapChainDesc = new SwapChainDescription() {
-                    BufferCount = 2, //Double buffer
-                    Usage = Usage.RenderTargetOutput, //We're using this swap chain as a RenderTarget
-                    OutputHandle = gameWindow.Handle, //Pass handle of our game window
-                    IsWindowed = true, //Yep
-                    ModeDescription = new ModeDescription(0, 0, new Rational(60, 1), Format.B8G8R8A8_UNorm), //Automatic resolution resizing, Refresh rate, Pixel color format
-                    SampleDescription = new SampleDescription(1, 0), //No Multisampling
-                    Flags = SwapChainFlags.AllowModeSwitch, //Allow us to switch modes
-                    SwapEffect = SwapEffect.Discard //Assuming this means buffer will be cleared when it is moved offscreen
-                };
-                //We need to create a Direct3D11 device because we can't create a swap chain for Direct2D1 without it. Direct2D1 has no Device object.
-                D3D11Device.CreateWithSwapChain(SharpDX.Direct3D.DriverType.Hardware, SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport, swapChainDesc, out device, out swapChain);
-                Surface backbuffer = Surface.FromSwapChain(swapChain, 0); //Grab the backbuffer to use as a RenderTarget
-                //Need a Direct2D1 factory just to make a new RenderTarget
-                D2D1Factory factory = new D2D1Factory(FactoryType.SingleThreaded, DebugLevel.Error);
-                Size2F dpi = factory.DesktopDpi;
-                renderTarget = new RenderTarget(factory, backbuffer, new RenderTargetProperties() {
-                    DpiX = dpi.Width, //Horizontal DPI
-                    DpiY = dpi.Height, //Vertical DPI
-                    MinLevel = FeatureLevel.Level_DEFAULT, //Just make sure we are using a hardware accelerated render target
-                    PixelFormat = new PixelFormat(Format.Unknown, AlphaMode.Ignore), //Who cares? our swap chain already knows this stuff
-                    Type = RenderTargetType.Default, //Again swap chain has this
-                    Usage = RenderTargetUsage.None //Yeah that swap chain though
-                });
-                Monitor.Exit(DirectXLock);
+                DM = new DirectManager(gameWindow);
+                DMInitialized.Set();
                 //Wow that was a handful. Now we can start our message loop on this thread.
                 gameWindow.Show();
                 Application.Run(gameWindow);
@@ -79,6 +56,8 @@ namespace MonsterRPGEngine {
             UIThread.SetApartmentState(ApartmentState.STA);
             UIThread.Name = "UIThread";
             UIThread.Start();
+            DMInitialized.WaitOne();
+            DMInitialized.Dispose();
             //TODO: Do some other initialization
             
             
@@ -105,41 +84,46 @@ namespace MonsterRPGEngine {
         public void Render() {
             //TODO: Add render logic here
             //WARNING: May have to move rendering code to message loop in UIThread if this is causing issues
-            Console.Clear();
-            Console.WriteLine("Game Time: " + gameTime);
-            Monitor.Enter(DirectXLock);
-            if (renderTarget != null && swapChain != null) {
+            Monitor.Enter(DM.DirectXLock);
+            WindowRenderTarget renderTarget = DM.RenderTarget;
+            if (renderTarget != null) {
                 //Begin Draw
                 renderTarget.BeginDraw();
                 renderTarget.Clear(Color.CornflowerBlue.ToColor4()); //Clear using a common game clear color
 
                 //End Draw
                 renderTarget.EndDraw();
-                //Swap Backbuffer
-                swapChain.Present(0, PresentFlags.None);
             }
-            Monitor.Exit(DirectXLock);
+            Monitor.Exit(DM.DirectXLock);
         }
         /// <summary>
         /// Game loop
         /// </summary>
         public void Run() {
             //TODO: Add engine logic here
-            long tickFrequency = 1000L / 60L; //60 ticks per second
-            Stopwatch lastTick = new Stopwatch();
-            lastTick.Start();
+            long tickWait = 1000L / 60L; //Milliseconds per tick
+            Stopwatch hiResTimer = new Stopwatch();
+            TickProfiler profiler = new TickProfiler();
+            hiResTimer.Start();
+            long lastTick = 0;
             while (!shouldTerminate) {
+                profiler.StartTick();
                 CheckInputs();
                 Update();
                 Render();
-                if (lastTick.ElapsedMilliseconds > tickFrequency) {
-                    Console.WriteLine("Tick Lag: " + (lastTick.ElapsedMilliseconds - tickFrequency) + " ms");
+                
+                if (hiResTimer.ElapsedMilliseconds - lastTick > tickWait) {
+                    Console.WriteLine("Tick Lag: " + (hiResTimer.ElapsedMilliseconds - tickWait) + " ms");
                 }
                 //Wait patiently to perform the next tick
-                while (lastTick.ElapsedMilliseconds < tickFrequency) {
+                while (hiResTimer.ElapsedMilliseconds - lastTick < tickWait) {
                     Thread.Yield();
                 }
-                lastTick.Restart();
+                long tickTime = profiler.StopTick();
+                Console.WriteLine("Tick Time: " + tickTime);
+                FPS.Add(tickTime);
+                lastTick = hiResTimer.ElapsedMilliseconds;
+                Console.WriteLine("FPS: " + profiler.FPS);
             }
             Terminate();
         }
@@ -149,11 +133,7 @@ namespace MonsterRPGEngine {
         public void Terminate() {
             //TODO: Destroy and clean up game objects
             //Release all COM objects
-            Monitor.Enter(DirectXLock);
-            device.Dispose();
-            swapChain.Dispose();
-            renderTarget.Dispose();
-            Monitor.Exit(DirectXLock);
+            DM.Dispose();
             Environment.Exit(0);
         }
     }
