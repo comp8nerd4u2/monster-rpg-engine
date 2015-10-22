@@ -4,12 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using MonsterRPGEngine.Collections;
 
 namespace MonsterRPGEngine {
     class TickProfiler {
         private Stopwatch profilerTimer;
-        private long baseTime;
+        private long tickStartTime;
         private long ticks;
+        private RevolvingArray<long> tickTimes = new RevolvingArray<long>(10);
+        public long ElapsedTickTime {
+            get {
+                return profilerTimer.ElapsedMilliseconds - tickStartTime;
+            }
+        }
 
         public long FPS { get; private set; }
 
@@ -18,14 +25,17 @@ namespace MonsterRPGEngine {
         }
 
         public void StartTick() {
-            baseTime = profilerTimer.ElapsedMilliseconds;
+            tickStartTime = profilerTimer.ElapsedMilliseconds;
         }
 
         public long StopTick() {
+            long tickEndTime = profilerTimer.ElapsedMilliseconds;
+            long tickSpeed = tickEndTime - tickStartTime;
+            tickTimes.Push(tickEndTime);
+
             ticks++;
-            long tickSpeed = profilerTimer.ElapsedMilliseconds - baseTime;
             FPS = (tickSpeed > 0) ? 1000 / tickSpeed : long.MaxValue;
-            return profilerTimer.ElapsedMilliseconds - baseTime;
+            return tickSpeed;
         }
     }
 }

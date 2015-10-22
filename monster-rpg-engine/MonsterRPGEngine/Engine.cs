@@ -112,17 +112,16 @@ namespace MonsterRPGEngine {
                 Update();
                 Render();
                 
-                if (hiResTimer.ElapsedMilliseconds - lastTick > tickWait) {
-                    Console.WriteLine("Tick Lag: " + (hiResTimer.ElapsedMilliseconds - tickWait) + " ms");
+                if (profiler.ElapsedTickTime > tickWait) {
+                    Console.WriteLine("Tick Lag: " + (profiler.ElapsedTickTime) + " ms");
                 }
                 //Wait patiently to perform the next tick
-                while (hiResTimer.ElapsedMilliseconds - lastTick < tickWait) {
+                while (profiler.ElapsedTickTime < tickWait) {
                     Thread.Yield();
                 }
                 long tickTime = profiler.StopTick();
                 Console.WriteLine("Tick Time: " + tickTime);
                 FPS.Add(tickTime);
-                lastTick = hiResTimer.ElapsedMilliseconds;
                 Console.WriteLine("FPS: " + profiler.FPS);
             }
             Terminate();
