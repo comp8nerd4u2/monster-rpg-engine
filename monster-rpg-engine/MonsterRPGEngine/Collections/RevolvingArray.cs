@@ -49,7 +49,7 @@ namespace MonsterRPGEngine.Collections {
             revolvingIndex = WrapIndex(revolvingIndex + 1);
             if (revolvingIndex == revolvingBase) //We're full
                 revolvingBase = WrapIndex(revolvingBase + 1);
-            else
+            else if (Elements < Capacity)
                 Elements++;
         }
 

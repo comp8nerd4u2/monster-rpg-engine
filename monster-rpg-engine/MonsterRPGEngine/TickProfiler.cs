@@ -5,12 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using MonsterRPGEngine.Collections;
+using MonsterRPGEngine.Math;
 
 namespace MonsterRPGEngine {
     class TickProfiler {
         private Stopwatch profilerTimer;
         private long tickStartTime;
         private long ticks;
+        private ExponentialMovingAverage ema = new ExponentialMovingAverage(60);
         private RevolvingArray<long> tickTimes = new RevolvingArray<long>(10);
         public long ElapsedTickTime {
             get {
@@ -30,9 +32,11 @@ namespace MonsterRPGEngine {
 
         public long StopTick() {
             long tickEndTime = profilerTimer.ElapsedMilliseconds;
+            TickSnapshot tickSnapshot = new TickSnapshot(tickStartTime, tickEndTime);
             long tickSpeed = tickEndTime - tickStartTime;
             tickTimes.Push(tickEndTime);
-
+            ema.Push(tickSnapshot.TickSpeed);
+            Console.WriteLine(ema.EMA);
             ticks++;
             FPS = (tickSpeed > 0) ? 1000 / tickSpeed : long.MaxValue;
             return tickSpeed;

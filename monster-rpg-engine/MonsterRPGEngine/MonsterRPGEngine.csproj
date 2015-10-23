@@ -63,8 +63,10 @@
     <Compile Include="Engine.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Drawing\TitleScreen.cs" />
+    <Compile Include="Math\ExponentialMovingAverage.cs" />
     <Compile Include="Math\LongMovingAverage.cs" />
     <Compile Include="TickProfiler.cs" />
+    <Compile Include="TickSnapshot.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="SharpDX">
