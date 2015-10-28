@@ -8,7 +8,6 @@ using MonsterRPGEngine.Collections;
 namespace MonsterRPGEngine.Math {
     class ExponentialMovingAverage {
         private readonly RevolvingArray<float> samples;
-        private readonly float Multiplier;
         public float EMA {
             get {
                 float resultEMA = 0;
@@ -21,7 +20,6 @@ namespace MonsterRPGEngine.Math {
         }
         public ExponentialMovingAverage(int maxSamples) {
             samples = new RevolvingArray<float>(maxSamples);
-            Multiplier = 2F / (maxSamples + 1);
         }
         public void Push(float sample) {
             samples.Push(sample);
