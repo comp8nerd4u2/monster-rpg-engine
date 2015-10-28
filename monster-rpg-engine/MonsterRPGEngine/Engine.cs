@@ -102,10 +102,7 @@ namespace MonsterRPGEngine {
         public void Run() {
             //TODO: Add engine logic here
             long tickWait = 1000L / 60L; //Milliseconds per tick
-            Stopwatch hiResTimer = new Stopwatch();
             TickProfiler profiler = new TickProfiler();
-            hiResTimer.Start();
-            long lastTick = 0;
             while (!shouldTerminate) {
                 profiler.StartTick();
                 CheckInputs();
