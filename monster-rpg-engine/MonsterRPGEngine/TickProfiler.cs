@@ -13,14 +13,14 @@ namespace MonsterRPGEngine {
         private long tickStartTime;
         private long ticks;
         private ExponentialMovingAverage ema = new ExponentialMovingAverage(60);
-        private RevolvingArray<long> tickTimes = new RevolvingArray<long>(10);
+        private RevolvingArray<TickSnapshot> tickSnapshots = new RevolvingArray<TickSnapshot>(10);
         public long ElapsedTickTime {
             get {
                 return profilerTimer.ElapsedMilliseconds - tickStartTime;
             }
         }
 
-        public long FPS { get; private set; }
+        public float FPS { get; private set; }
 
         public TickProfiler() {
             profilerTimer = Stopwatch.StartNew();
@@ -33,13 +33,12 @@ namespace MonsterRPGEngine {
         public long StopTick() {
             long tickEndTime = profilerTimer.ElapsedMilliseconds;
             TickSnapshot tickSnapshot = new TickSnapshot(tickStartTime, tickEndTime);
-            long tickSpeed = tickEndTime - tickStartTime;
-            tickTimes.Push(tickEndTime);
+            tickSnapshots.Push(tickSnapshot);
             ema.Push(tickSnapshot.TickSpeed);
-            Console.WriteLine(ema.EMA);
+            Console.WriteLine(ema.CalculateEMA());
             ticks++;
-            FPS = (tickSpeed > 0) ? 1000 / tickSpeed : long.MaxValue;
-            return tickSpeed;
+            FPS = 1.0F / (((tickSnapshot.TickSpeed > 0) ? tickSnapshot.TickSpeed : 1.0F) / 1000.0F);
+            return tickSnapshot.TickSpeed;
         }
     }
 }

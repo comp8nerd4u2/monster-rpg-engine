@@ -8,7 +8,7 @@ namespace MonsterRPGEngine {
     class TickSnapshot {
         public readonly long StartTime;
         public readonly long EndTime;
-        public readonly float TickSpeed;
+        public readonly long TickSpeed;
         public TickSnapshot(long startTime, long endTime) {
             StartTime = startTime;
             EndTime = endTime;

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MonsterRPGEngine.Collections {
-    class RevolvingArray<T> {
+    public class RevolvingArray<T> {
         private T[] internalArray;
         private int revolvingBase;
         private int revolvingIndex;
